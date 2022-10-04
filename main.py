@@ -1,3 +1,5 @@
+from guitester import GUITester
+
 from tkinter import *
 import win32gui
 from sys import platform
@@ -27,20 +29,22 @@ class BarHeight(Tk):
 		self.destroy()
 		return bar_height
 
-class SelectorGUI(BarHeight):
+class SelectorGUI(BarHeight, GUITester):
 	root = None
 	ExitFlag = False
-	Dots = 0
+	DotCount = 0
+
+	Dots = None
 
 	ScreenPos = (0, 0)
 	BarHeight = None
 	ScreenWidth = 0
 	ScreenHeight = 0
 
-	def __init__(self, Width, Height, Title, Dots) -> None:
+	def __init__(self, Width, Height, Title, DotCount) -> None:
 		self.BarHeight = super().__init__()
 
-		self.Dots = Dots
+		self.DotCount = DotCount
 		
 		self.ScreenWidth = Width
 		self.ScreenHeight = Height
@@ -77,16 +81,14 @@ class SelectorGUI(BarHeight):
 	def GetPixelColorsByPIL(self):
 		Image = ImageGrab.grab().load()
 
-		Dots = [[0 for i in range(self.Dots)] for j in range(self.Dots)] 
+		self.Dots = [[0 for i in range(self.DotCount)] for j in range(self.DotCount)] 
 
-		for x in range(self.Dots):
-			for y in range(self.Dots):
-				PosX, PosY = (x + 0.5) * self.ScreenWidth / self.Dots + self.ScreenPos[0], (y + 0.5) * self.ScreenHeight / self.Dots + self.BarHeight + self.ScreenPos[1]
+		for x in range(self.DotCount):
+			for y in range(self.DotCount):
+				PosX, PosY = (x + 0.5) * self.ScreenWidth / self.DotCount + self.ScreenPos[0], (y + 0.5) * self.ScreenHeight / self.DotCount + self.BarHeight + self.ScreenPos[1] + 10
 				PosX, PosY = int(PosX), int(PosY)
-				Dots[x][y] = 1 if (Image[PosX, PosY][0] > 127) else 0
+				self.Dots[x][y] = True if (Image[PosX, PosY][0] > 127) else False
 				pass
-
-		return Dots
 		
 
 	def IsAlive(self):
@@ -95,6 +97,8 @@ class SelectorGUI(BarHeight):
 		else:
 			return True
 
+	def GetDots(self):
+		return self.Dots
 
 
 	def OnClose(self):
@@ -120,19 +124,22 @@ class SelectorGUI(BarHeight):
 		TempValue = self.root.winfo_geometry().split('+')
 		self.ScreenPos = (int(TempValue[1]), int(TempValue[2]))
 
-		LastTime = time.time()
+		# LastTime = time.time()
 		# 이미지 가져오기
 		self.GetPixelColorsByPIL()
-		print(time.time() - LastTime)
+		# print(time.time() - LastTime)
 
 
 		self.root.update()
 
 
 
-MyGUI = SelectorGUI(600, 600, "선택 창", 5)
+MyGUI = SelectorGUI(600, 600, "선택 창", 32)
+GUITest = GUITester(600, 600, "GUI 테스터", 32)
+
 # print(MyGUI.BarHeight)
 while True:
 	if not MyGUI.IsAlive():
 		break
 	MyGUI.Update()
+	GUITest.Update(MyGUI.GetDots())
