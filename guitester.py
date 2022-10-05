@@ -18,6 +18,9 @@ class GUITester():
 		pygame.display.set_caption(self.Title)
 
 	def Update(self, Dots):
+		if Dots == None:
+			self.screen.fill((0, 0, 0))
+			return
 		self.screen.fill((0, 0, 0))
 		for x in range(self.DotCount):
 			for y in range(self.DotCount):

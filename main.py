@@ -1,9 +1,9 @@
 from guitester import GUITester
+from rgbchecker import RGBChecker
 
 from tkinter import *
-import win32gui
+from threading import Thread
 from sys import platform
-from PIL import ImageGrab
 import time
 
 # https://stackoverflow.com/questions/57742442/how-to-get-the-height-of-a-tkinter-window-title-bar
@@ -29,7 +29,13 @@ class BarHeight(Tk):
 		self.destroy()
 		return bar_height
 
-class SelectorGUI(BarHeight, GUITester):
+RGBCheckers = []
+RGBCheckerThreads = []
+
+def Checker(index, ScreenWidth, ScreenHeight, DotCount, ScreenPos, BarHeight):
+	return RGBCheckers[index].GetPixelColorsByPIL(ScreenWidth, ScreenHeight, DotCount, ScreenPos, BarHeight)
+
+class SelectorGUI(BarHeight):
 	root = None
 	ExitFlag = False
 	DotCount = 0
@@ -40,6 +46,9 @@ class SelectorGUI(BarHeight, GUITester):
 	BarHeight = None
 	ScreenWidth = 0
 	ScreenHeight = 0
+
+	RGBCheckerLastTime = 0
+	RGBCheckerRepeatNum = 0
 
 	def __init__(self, Width, Height, Title, DotCount) -> None:
 		self.BarHeight = super().__init__()
@@ -67,28 +76,11 @@ class SelectorGUI(BarHeight, GUITester):
 		self.root.protocol("WM_DELETE_WINDOW", self.OnClose)
 		self.root.bind("<Configure>", self.OnResize)
 
-	# 0.0164 sec / 1 dot ( 32*32 = 16 sec.. )
-	# 사용 X
-	def GetPixelColor(self, i_x, i_y):
-		i_desktop_window_id = win32gui.GetDesktopWindow()
-		i_desktop_window_dc = win32gui.GetWindowDC(i_desktop_window_id)
-		long_colour = win32gui.GetPixel(i_desktop_window_dc, i_x, i_y)
-		i_colour = int(long_colour)
-		win32gui.ReleaseDC(i_desktop_window_id,i_desktop_window_dc)
-		return (i_colour & 0xff), ((i_colour >> 8) & 0xff), ((i_colour >> 16) & 0xff)
-
-	# 0.06 ~ 0.07 sec / screen ( 32*32 dots )
-	def GetPixelColorsByPIL(self):
-		Image = ImageGrab.grab().load()
-
-		self.Dots = [[0 for i in range(self.DotCount)] for j in range(self.DotCount)] 
-
-		for x in range(self.DotCount):
-			for y in range(self.DotCount):
-				PosX, PosY = (x + 0.5) * self.ScreenWidth / self.DotCount + self.ScreenPos[0], (y + 0.5) * self.ScreenHeight / self.DotCount + self.BarHeight + self.ScreenPos[1] + 10
-				PosX, PosY = int(PosX), int(PosY)
-				self.Dots[x][y] = True if (Image[PosX, PosY][0] > 127) else False
-				pass
+		self.RGBCheckerLastTime = time.time()
+		for i in range(5):
+			temp = Thread(target=Checker, args = [i, self.ScreenWidth, self.ScreenHeight, self.DotCount, self.ScreenPos, self.BarHeight])
+			RGBCheckerThreads.append(temp)
+			RGBCheckers.append(RGBChecker())
 		
 
 	def IsAlive(self):
@@ -119,23 +111,39 @@ class SelectorGUI(BarHeight, GUITester):
 			self.root.geometry(f"{self.root.winfo_height()}x{self.root.winfo_height()}")
 
 		self.ScreenWidth, self.ScreenHeight = self.root.winfo_width(), self.root.winfo_height()
+		# return
 
 	def Update(self):
 		TempValue = self.root.winfo_geometry().split('+')
 		self.ScreenPos = (int(TempValue[1]), int(TempValue[2]))
 
-		# LastTime = time.time()
 		# 이미지 가져오기
-		self.GetPixelColorsByPIL()
-		# print(time.time() - LastTime)
+		# self.Dots = self.GetPixelColorsByPIL()
+
+		TimeDif = time.time() - self.RGBCheckerLastTime
+		if TimeDif > 0.02:
+			self.RGBCheckerLastTime -= TimeDif
+
+			self.RGBCheckerRepeatNum += 1
+			if self.RGBCheckerRepeatNum >= 5:
+				self.RGBCheckerRepeatNum = 0
+				for i in range(5):
+					RGBCheckers[i] = RGBChecker()
+					temp = Thread(target=Checker, args = [i, self.ScreenWidth, self.ScreenHeight, self.DotCount, self.ScreenPos, self.BarHeight])
+					self.RGBCheckerThreads[i] = temp
+			# print(self.RGBCheckerRepeatNum)
+			LastTime = time.time()
+			RGBCheckerThreads[self.RGBCheckerRepeatNum].start()
+			# self.Dots = self.RGBCheckers[self.RGBCheckerRepeatNum].GetPixelColorsByPIL(self.ScreenWidth, self.ScreenHeight, self.DotCount, self.ScreenPos, self.BarHeight)
+			print(time.time() - LastTime)
 
 
 		self.root.update()
 
 
 
-MyGUI = SelectorGUI(600, 600, "선택 창", 32)
-GUITest = GUITester(600, 600, "GUI 테스터", 32)
+MyGUI = SelectorGUI(600, 600, "선택 창", 128)
+GUITest = GUITester(600, 600, "GUI 테스터", 128)
 
 # print(MyGUI.BarHeight)
 while True:
