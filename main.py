@@ -2,7 +2,7 @@ from guitester import GUITester
 from rgbchecker import RGBChecker
 
 from tkinter import *
-from threading import Thread
+import keyboard
 from sys import platform
 import time
 
@@ -29,13 +29,13 @@ class BarHeight(Tk):
 		self.destroy()
 		return bar_height
 
-RGBCheckers = []
-RGBCheckerThreads = []
+# RGBCheckers = []
+# RGBCheckerThreads = []
 
-def Checker(index, ScreenWidth, ScreenHeight, DotCount, ScreenPos, BarHeight):
-	return RGBCheckers[index].GetPixelColorsByPIL(ScreenWidth, ScreenHeight, DotCount, ScreenPos, BarHeight)
+# def Checker(index, ScreenWidth, ScreenHeight, DotCount, ScreenPos, BarHeight):
+# 	return RGBCheckers[index].GetPixelColorsByPIL(ScreenWidth, ScreenHeight, DotCount, ScreenPos, BarHeight)
 
-class SelectorGUI(BarHeight):
+class SelectorGUI(BarHeight, RGBChecker):
 	root = None
 	ExitFlag = False
 	DotCount = 0
@@ -47,8 +47,8 @@ class SelectorGUI(BarHeight):
 	ScreenWidth = 0
 	ScreenHeight = 0
 
-	RGBCheckerLastTime = 0
-	RGBCheckerRepeatNum = 0
+	# RGBCheckerLastTime = 0
+	# RGBCheckerRepeatNum = 0
 
 	def __init__(self, Width, Height, Title, DotCount) -> None:
 		self.BarHeight = super().__init__()
@@ -76,11 +76,11 @@ class SelectorGUI(BarHeight):
 		self.root.protocol("WM_DELETE_WINDOW", self.OnClose)
 		self.root.bind("<Configure>", self.OnResize)
 
-		self.RGBCheckerLastTime = time.time()
-		for i in range(5):
-			temp = Thread(target=Checker, args = [i, self.ScreenWidth, self.ScreenHeight, self.DotCount, self.ScreenPos, self.BarHeight])
-			RGBCheckerThreads.append(temp)
-			RGBCheckers.append(RGBChecker())
+		# self.RGBCheckerLastTime = time.time()
+		# for i in range(5):
+		# 	temp = Thread(target=Checker, args = [i, self.ScreenWidth, self.ScreenHeight, self.DotCount, self.ScreenPos, self.BarHeight])
+		# 	RGBCheckerThreads.append(temp)
+		# 	RGBCheckers.append(RGBChecker())
 		
 
 	def IsAlive(self):
@@ -98,19 +98,20 @@ class SelectorGUI(BarHeight):
 		self.root.destroy()
 
 	def OnResize(self, e):
-		if self.ScreenWidth != self.root.winfo_width():
-			# Width changed
-			self.root.geometry(f"{self.root.winfo_width()}x{self.root.winfo_width()}")
+		if keyboard.is_pressed("left shift"):
+			if self.ScreenWidth != self.root.winfo_width():
+				# Width changed
+				self.root.geometry(f"{self.root.winfo_width()}x{self.root.winfo_width()}")
 
-		elif self.ScreenHeight != self.root.winfo_height():
-			# Height changed
-			self.root.geometry(f"{self.root.winfo_height()}x{self.root.winfo_height()}")
+			elif self.ScreenHeight != self.root.winfo_height():
+				# Height changed
+				self.root.geometry(f"{self.root.winfo_height()}x{self.root.winfo_height()}")
 
-		elif self.ScreenWidth != self.root.winfo_width() and self.ScreenHeight != self.root.winfo_height():
-			# Width / Height changed
-			self.root.geometry(f"{self.root.winfo_height()}x{self.root.winfo_height()}")
+			elif self.ScreenWidth != self.root.winfo_width() and self.ScreenHeight != self.root.winfo_height():
+				# Width / Height changed
+				self.root.geometry(f"{self.root.winfo_height()}x{self.root.winfo_height()}")
 
-		self.ScreenWidth, self.ScreenHeight = self.root.winfo_width(), self.root.winfo_height()
+			self.ScreenWidth, self.ScreenHeight = self.root.winfo_width(), self.root.winfo_height()
 		# return
 
 	def Update(self):
@@ -120,30 +121,30 @@ class SelectorGUI(BarHeight):
 		# 이미지 가져오기
 		# self.Dots = self.GetPixelColorsByPIL()
 
-		TimeDif = time.time() - self.RGBCheckerLastTime
-		if TimeDif > 0.02:
-			self.RGBCheckerLastTime -= TimeDif
+		# TimeDif = time.time() - self.RGBCheckerLastTime
+		# if TimeDif > 0.02:
+		# 	self.RGBCheckerLastTime -= TimeDif
 
-			self.RGBCheckerRepeatNum += 1
-			if self.RGBCheckerRepeatNum >= 5:
-				self.RGBCheckerRepeatNum = 0
-				for i in range(5):
-					RGBCheckers[i] = RGBChecker()
-					temp = Thread(target=Checker, args = [i, self.ScreenWidth, self.ScreenHeight, self.DotCount, self.ScreenPos, self.BarHeight])
-					self.RGBCheckerThreads[i] = temp
-			# print(self.RGBCheckerRepeatNum)
-			LastTime = time.time()
-			RGBCheckerThreads[self.RGBCheckerRepeatNum].start()
-			# self.Dots = self.RGBCheckers[self.RGBCheckerRepeatNum].GetPixelColorsByPIL(self.ScreenWidth, self.ScreenHeight, self.DotCount, self.ScreenPos, self.BarHeight)
-			print(time.time() - LastTime)
+		# 	self.RGBCheckerRepeatNum += 1
+		# 	if self.RGBCheckerRepeatNum >= 5:
+		# 		self.RGBCheckerRepeatNum = 0
+		# 		for i in range(5):
+		# 			RGBCheckers[i] = RGBChecker()
+		# 			temp = Thread(target=Checker, args = [i, self.ScreenWidth, self.ScreenHeight, self.DotCount, self.ScreenPos, self.BarHeight])
+		# 			self.RGBCheckerThreads[i] = temp
+		# 	# print(self.RGBCheckerRepeatNum)
+		# 	LastTime = time.time()
+		# 	RGBCheckerThreads[self.RGBCheckerRepeatNum].start()
+		self.Dots = super().GetPixelColorsByPIL(self.ScreenWidth, self.ScreenHeight, self.DotCount, self.ScreenPos, self.BarHeight)
+		# print(time.time() - LastTime)
 
 
 		self.root.update()
 
 
 
-MyGUI = SelectorGUI(600, 600, "선택 창", 128)
-GUITest = GUITester(600, 600, "GUI 테스터", 128)
+MyGUI = SelectorGUI(600, 600, "선택 창", 32)
+GUITest = GUITester(600, 600, "GUI 테스터", 32, True)
 
 # print(MyGUI.BarHeight)
 while True:
