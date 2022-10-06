@@ -1,5 +1,6 @@
 from guitester import GUITester
 from rgbchecker import RGBChecker
+import unitysender
 
 from tkinter import *
 import keyboard
@@ -129,6 +130,16 @@ class SelectorGUI(BarHeight, RGBChecker):
 
 		self.root.update()
 
+def SendData(Dots):
+	ResultMSG = ""
+	for x in range(32):
+		for y in range(32):
+			if Dots[x][y]:
+				ResultMSG += "1"
+			else:
+				ResultMSG += "0"
+	unitysender.SetValue(ResultMSG)
+
 
 
 MyGUI = SelectorGUI(600, 600, "선택 창", 32)
@@ -140,3 +151,4 @@ while True:
 		break
 	MyGUI.Update()
 	GUITest.Update(MyGUI.GetDots())
+	SendData(MyGUI.GetDots())
