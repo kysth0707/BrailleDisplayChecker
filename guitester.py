@@ -32,8 +32,11 @@ class GUITester():
 		for x in range(self.DotCount):
 			for y in range(self.DotCount):
 				PosX, PosY = self.ScreenWidth / self.DotCount * x, self.ScreenHeight / self.DotCount * y
-				if Dots[x][y]:
-					pygame.draw.rect(self.screen, (255, 255, 255), [int(PosX), int(PosY), int(self.ScreenWidth / self.DotCount), int(self.ScreenHeight / self.DotCount)])
+				try:
+					if Dots[x][y]:
+						pygame.draw.rect(self.screen, (255, 255, 255), [int(PosX), int(PosY), int(self.ScreenWidth / self.DotCount), int(self.ScreenHeight / self.DotCount)])
+				except:
+					return
 
 		if self.ShowFPS:
 			FPS = math.floor(1 / (time.time() - self.LastTime))

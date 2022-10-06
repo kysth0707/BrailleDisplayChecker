@@ -5,6 +5,7 @@ from tkinter import *
 import keyboard
 from sys import platform
 import time
+from threading import Thread
 
 # https://stackoverflow.com/questions/57742442/how-to-get-the-height-of-a-tkinter-window-title-bar
 class BarHeight(Tk):
@@ -117,25 +118,12 @@ class SelectorGUI(BarHeight, RGBChecker):
 	def Update(self):
 		TempValue = self.root.winfo_geometry().split('+')
 		self.ScreenPos = (int(TempValue[1]), int(TempValue[2]))
+		
+		# LastTime = time.time()
 
-		# 이미지 가져오기
-		# self.Dots = self.GetPixelColorsByPIL()
-
-		# TimeDif = time.time() - self.RGBCheckerLastTime
-		# if TimeDif > 0.02:
-		# 	self.RGBCheckerLastTime -= TimeDif
-
-		# 	self.RGBCheckerRepeatNum += 1
-		# 	if self.RGBCheckerRepeatNum >= 5:
-		# 		self.RGBCheckerRepeatNum = 0
-		# 		for i in range(5):
-		# 			RGBCheckers[i] = RGBChecker()
-		# 			temp = Thread(target=Checker, args = [i, self.ScreenWidth, self.ScreenHeight, self.DotCount, self.ScreenPos, self.BarHeight])
-		# 			self.RGBCheckerThreads[i] = temp
-		# 	# print(self.RGBCheckerRepeatNum)
-		# 	LastTime = time.time()
-		# 	RGBCheckerThreads[self.RGBCheckerRepeatNum].start()
+		# Thread(target = super().GetPixelColorsByPIL, args = [self.ScreenWidth, self.ScreenHeight, self.DotCount, self.ScreenPos, self.BarHeight]).start()
 		self.Dots = super().GetPixelColorsByPIL(self.ScreenWidth, self.ScreenHeight, self.DotCount, self.ScreenPos, self.BarHeight)
+		
 		# print(time.time() - LastTime)
 
 
