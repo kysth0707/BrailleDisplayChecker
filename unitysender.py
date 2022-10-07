@@ -1,12 +1,16 @@
 import socket
-from threading import Thread
+from threading import Thread, Lock
 import time
 
 Value = ""
 
+lock = Lock()
+
 def SetValue(_Value):
 	global Value
+	lock.acquire()
 	Value = _Value
+	lock.release()
 
 def SocketTCPForUnity():
 	while True:

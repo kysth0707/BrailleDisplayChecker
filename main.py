@@ -104,14 +104,17 @@ class SelectorGUI(BarHeight, RGBChecker):
 			if self.ScreenWidth != self.root.winfo_width():
 				# Width changed
 				self.root.geometry(f"{self.root.winfo_width()}x{self.root.winfo_width()}")
+				self.root.resizable(True, True)
 
 			elif self.ScreenHeight != self.root.winfo_height():
 				# Height changed
 				self.root.geometry(f"{self.root.winfo_height()}x{self.root.winfo_height()}")
+				self.root.resizable(True, True)
 
 			elif self.ScreenWidth != self.root.winfo_width() and self.ScreenHeight != self.root.winfo_height():
 				# Width / Height changed
 				self.root.geometry(f"{self.root.winfo_height()}x{self.root.winfo_height()}")
+				self.root.resizable(True, True)
 
 			self.ScreenWidth, self.ScreenHeight = self.root.winfo_width(), self.root.winfo_height()
 		# return
@@ -143,12 +146,12 @@ def SendData(Dots):
 
 
 MyGUI = SelectorGUI(600, 600, "선택 창", 32)
-GUITest = GUITester(600, 600, "GUI 테스터", 32, True)
+# GUITest = GUITester(600, 600, "GUI 테스터", 32, True)
 
 # print(MyGUI.BarHeight)
 while True:
 	if not MyGUI.IsAlive():
 		break
 	MyGUI.Update()
-	GUITest.Update(MyGUI.GetDots())
+	# GUITest.Update(MyGUI.GetDots())
 	SendData(MyGUI.GetDots())
