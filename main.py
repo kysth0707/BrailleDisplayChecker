@@ -1,6 +1,6 @@
 from guitester import GUITester
 from rgbchecker import RGBChecker
-import unitysender
+from arduinosender import ArduinoSender
 
 from tkinter import *
 import keyboard
@@ -133,7 +133,7 @@ class SelectorGUI(BarHeight, RGBChecker):
 
 		self.root.update()
 
-def SendData(Dots):
+def GetStrData(Dots):
 	ResultMSG = ""
 	for x in range(32):
 		for y in range(32):
@@ -141,17 +141,35 @@ def SendData(Dots):
 				ResultMSG += "1"
 			else:
 				ResultMSG += "0"
-	unitysender.SetValue(ResultMSG)
+	return ResultMSG
+
+def GetStrDataForArduino(Dots):
+	ResultMSG = ""
+	for y in range(16):
+		i = 0
+		for x in range(16):
+			if Dots[x * 2][y * 2]:
+				i += 2 ** x
+		ResultMSG += str(i).zfill(5)
+	# print(len(ResultMSG[:40]))
+	# print(len(ResultMSG[40:]))
+	return ResultMSG
 
 
-
+Arduino = ArduinoSender()
 MyGUI = SelectorGUI(600, 600, "선택 창", 32)
-# GUITest = GUITester(600, 600, "GUI 테스터", 32, True)
+GUITest = GUITester(600, 600, "GUI 테스터", 32, True)
 
 # print(MyGUI.BarHeight)
 while True:
 	if not MyGUI.IsAlive():
 		break
 	MyGUI.Update()
-	# GUITest.Update(MyGUI.GetDots())
-	SendData(MyGUI.GetDots())
+	GUITest.Update(MyGUI.GetDots())
+
+	# unitysender.SetValue(GetStrData(MyGUI.GetDots()))
+
+
+	Data = GetStrDataForArduino(MyGUI.GetDots())
+	Arduino.Send(Data[:40])
+	Arduino.Send(Data[40:])

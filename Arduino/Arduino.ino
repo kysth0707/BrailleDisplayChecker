@@ -1,3 +1,111 @@
+/*
+ * LCD
+ */
+#include <LiquidCrystal_I2C.h>
+#include <Wire.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+void setup()
+{
+    Serial.begin(115200);
+    lcd.begin();
+    lcd.backlight();
+    lcd.setCursor(0, 0);
+    lcd.print("Braille Arduino");
+    lcd.setCursor(0, 1);
+    lcd.print("kysth0707");
+    delay(1000);
+    lcd.clear();
+}
+
+void loop()
+{
+    if(Serial.available() >= 40)
+    {
+        int Datas[16];
+        for(int ii = 0; ii < 2; ii++)
+        {
+            while(Serial.available() < 40)
+            {
+                delay(1);
+            }
+            for(int i = 0; i < 8; i++)
+            {
+                int Num10000 = Serial.read() - '0';
+                int Num1000 = Serial.read() - '0';
+                int Num100 = Serial.read() - '0';
+                int Num10 = Serial.read() - '0';
+                int Num1 = Serial.read() - '0';
+                
+                int Num = Num10000 * 10000 + Num1000 * 1000 + Num100 * 100 + Num10 * 10 + Num1;
+                Datas[ii * 8 + i] = Num;
+                //Datas[ii * 8 + i + 1] = Num % 256;
+            }
+        }
+        lcd.setCursor(0, 1);
+        lcd.print(Datas[0]);
+
+//        if(Datas[y] & (1 << x))
+        byte Dots[8] = {0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000};
+        for(int y = 0; y < 8; y++)
+        {
+            for(int x = 0; x < 5; x++)
+            {
+                if((Datas[y] & 256) & (1 << x))
+                {
+                    Dots[y] = Dots[y] | (1 << x);
+                }
+            }
+        }
+        lcd.createChar(1, Dots);
+        lcd.setCursor(0, 0);
+        lcd.write(1);
+    }
+    delay(50);
+    
+    /*
+    if(Serial.available() >= 40)  //최대가 64임
+    {
+        int Datas[16][16];
+        
+        for(int y = 0; y < 16; y++)
+        {
+            for(int x = 0; x < 16; x++)
+            {
+                Datas[x][y] = Serial.read() - '0';
+            }
+        }
+        
+        
+        byte a[8] = {0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000};
+        for(int y = 0; y < 8; y++)
+        {
+            for(int x = 0; x < 5; x++)
+            {
+                if(Datas[x][y] == 1)
+                {
+                    a[y] = a[y] | (1 << x);
+                }
+            }
+        }
+        DrawDot(a, 0, 0);
+    }
+    delay(50);
+    */
+}
+/*
+void DrawDot(byte Datas[8], int cursorX, int cursorY)
+{
+    lcd.createChar(0, Datas);
+    lcd.setCursor(cursorX, cursorY);
+    lcd.write(0);
+}*/
+
+
+
+/*
+ * RGB Led Matrix
 //남땜 떨어져서 진행 불가
 
 #include <Adafruit_NeoPixel.h>
@@ -72,4 +180,4 @@ void FillAllSlow(uint32_t c)
         delay(200);
     }
 }
-
+*/
