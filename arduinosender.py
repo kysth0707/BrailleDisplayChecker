@@ -33,4 +33,4 @@ class ArduinoSender:
 
 	def Send(self, txt):
 		self.ser.write(txt.encode())
-		print(txt)
+		# print(txt)

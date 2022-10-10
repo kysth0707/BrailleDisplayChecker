@@ -144,13 +144,13 @@ def GetStrData(Dots):
 	return ResultMSG
 
 def GetStrDataForArduino(Dots):
-	ResultMSG = ""
+	ResultMSG = []
 	for y in range(16):
 		i = 0
 		for x in range(16):
 			if Dots[x * 2][y * 2]:
 				i += 2 ** x
-		ResultMSG += str(i).zfill(5)
+		ResultMSG.append(str(i).zfill(5))
 	# print(len(ResultMSG[:40]))
 	# print(len(ResultMSG[40:]))
 	return ResultMSG
@@ -171,5 +171,6 @@ while True:
 
 
 	Data = GetStrDataForArduino(MyGUI.GetDots())
-	Arduino.Send(Data[:40])
-	Arduino.Send(Data[40:])
+	# print(Data)
+	for i in range(16):
+		Arduino.Send(Data[i])

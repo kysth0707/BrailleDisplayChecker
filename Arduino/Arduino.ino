@@ -1,6 +1,13 @@
 /*
  * LCD
  */
+
+//Note
+/*
+ * 아두이노 Uno 에서 int : -32,768 ~ 32,767
+ * 즉 unsigned 로 변경해줄 필요 있음
+ */
+
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 
@@ -21,46 +28,34 @@ void setup()
 
 void loop()
 {
-    if(Serial.available() >= 40)
+    if(Serial.available() >= 5)
     {
-        int Datas[16];
-        for(int ii = 0; ii < 2; ii++)
+        unsigned int Datas[16];
+        for(int y = 0; y < 16; y++)
         {
-            while(Serial.available() < 40)
+            while(Serial.available() < 5)
             {
                 delay(1);
             }
-            for(int i = 0; i < 8; i++)
-            {
-                int Num10000 = Serial.read() - '0';
-                int Num1000 = Serial.read() - '0';
-                int Num100 = Serial.read() - '0';
-                int Num10 = Serial.read() - '0';
-                int Num1 = Serial.read() - '0';
-                
-                int Num = Num10000 * 10000 + Num1000 * 1000 + Num100 * 100 + Num10 * 10 + Num1;
-                Datas[ii * 8 + i] = Num;
-                //Datas[ii * 8 + i + 1] = Num % 256;
-            }
-        }
-        lcd.setCursor(0, 1);
-        lcd.print(Datas[0]);
+            int Num10000 = Serial.read() - '0';
+            int Num1000 = Serial.read() - '0';
+            int Num100 = Serial.read() - '0';
+            int Num10 = Serial.read() - '0';
+            int Num1 = Serial.read() - '0';
 
-//        if(Datas[y] & (1 << x))
-        byte Dots[8] = {0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000};
-        for(int y = 0; y < 8; y++)
-        {
-            for(int x = 0; x < 5; x++)
-            {
-                if((Datas[y] & 256) & (1 << x))
-                {
-                    Dots[y] = Dots[y] | (1 << x);
-                }
-            }
+            unsigned int Num = Num10000 * 10000 + Num1000 * 1000 + Num100 * 100 + Num10 * 10 + Num1;
+//          
+            Datas[y] = Num;
+            //Datas[ii * 8 + i + 1] = Num % 256;
+            
         }
-        lcd.createChar(1, Dots);
-        lcd.setCursor(0, 0);
-        lcd.write(1);
+
+        lcd.clear();
+        DrawDotImg(Datas, 0, 0);
+        DrawDotImg(Datas, 0, 1);
+        DrawDotImg(Datas, 1, 0);
+        DrawDotImg(Datas, 1, 1);
+        
     }
     delay(50);
     
@@ -94,6 +89,41 @@ void loop()
     delay(50);
     */
 }
+
+void DrawDotImg(int x, int y)
+{
+    byte Dots00[8] = {0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000};
+    byte Dots01[8] = {0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000};
+    byte Dots10[8] = {0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000};
+    byte Dots11[8] = {0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000};
+    byte Dots20[8] = {0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000};
+    byte Dots21[8] = {0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000,0b00000};
+
+    switch(x / 5 == 0)
+    {
+        case 0: 
+            if(y == 0)
+            { Dots00[y % 8] = Dots00[y % 8] | (1 << (x % 5)); }
+            else { Dots01[y % 8] = Dots01[y % 8] | (1 << (x % 5)); }
+        break;
+        case 1: 
+            if(y == 0)
+            { Dots10[y % 8] = Dots10[y % 8] | (1 << (x % 5)); }
+            else { Dots11[y % 8] = Dots11[y % 8] | (1 << (x % 5)); }
+        break;
+        case 2: 
+            if(y == 0)
+            { Dots20[y % 8] = Dots20[y % 8] | (1 << (x % 5)); }
+            else { Dots21[y % 8] = Dots21[y % 8] | (1 << (x % 5)); }
+        break;
+    }
+    
+    
+    lcd.createChar(1, Dots);
+    lcd.setCursor(xx, yy);
+    lcd.write(1);
+}
+
 /*
 void DrawDot(byte Datas[8], int cursorX, int cursorY)
 {
